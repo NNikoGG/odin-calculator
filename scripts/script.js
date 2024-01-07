@@ -3,30 +3,32 @@ let num1;
 let num2;
 let result;
 let operator = '';
+display.value = '';
 
-function appendToDisplay(input){
-    display.value += input;
-    if (isNaN(input)){
-        operator = input;
-        console.log(operator);
-        if (num1 && num2 && operator){
-            calculate();
-            display.value += operator;
-            operator = '';
-        }
-    }
-
-    else{
-        if (!num1){
-            num1 = input;
-            console.log(num1);
-        }
-        else{
-            num2 = input;
-            console.log(num2);
+function operandFunction(input){
+    if (display.value.length < 10) {
+        display.value += input;
+        if (num1 === undefined || operator === '') {
+            num1 = (num1 !== undefined ? num1.toString() : '') + input;
+            num1 = parseFloat(num1);
+        } else {
+            num2 = (num2 !== undefined ? num2.toString() : '') + input;
+            num2 = parseFloat(num2);
         }
     }
 }
+
+
+
+function operatorFunction(input){
+    if(num2 !== undefined){
+        operate();
+    }
+    operator = input;
+    display.value += input;
+    num2 = undefined; // Reset num2 for the next operand
+}
+
 
 
 function clearDisplay(){
@@ -35,44 +37,37 @@ function clearDisplay(){
 
 function allClear(){
     display.value = '';
-    num1 = null;
-    num2 = null;
+    num1 = undefined;
+    num2 = undefined;
     operator = '';
 }
 
-function operate(){
-    if (operator == '+'){
-        result = parseFloat(num1) + parseFloat(num2);
-        display.value = result;
-        num1 = result;
-        num2 = null;
-        operator = ''
-        console.log(result);
-    }
+function operate() {
+    num1 = parseFloat(num1); 
+    num2 = parseFloat(num2);
 
-    else if (operator == '-'){
-        result = parseFloat(num1) - parseFloat(num2);
-        display.value = result;
-        num1 = result;
-        num2 = null;
-        operator = ''
-        console.log(result);
+    switch (operator) {
+        case '+':
+            result = num1 + num2;
+            break;
+        case '-':
+            result = num1 - num2;
+            break;
+        case '*':
+            result = num1 * num2;
+            break;
+        case '/':
+            result = num1 / num2;
+            break;
+        default:
+            result = "Error!";
+            break;
     }
-}
-
-function calculate(){
-    if (operator == '+'){
-        result = parseFloat(num1) + parseFloat(num2);
-        display.value = result;
-        num1 = result;
-        num2 = null;
-        console.log(result);
+    result = result.toString();
+    if (result.length > 10) {
+        result = result.substring(0, 10);
     }
-    else if (operator == '-'){
-        result = parseFloat(num1) - parseFloat(num2);
-        display.value = result;
-        num1 = result;
-        num2 = null;
-        console.log(result);
-    }
+    display.value = result;
+    num1 = result; // Storing the result for further operations
+    num2 = undefined;
 }
