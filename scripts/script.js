@@ -1,135 +1,192 @@
-const display = document.querySelector('.display');
-let num1;
-let num2;
-let result;
-let signFlag = 0;
-let operator = '';
-display.value = '';
+let displayValue = '0';
+let firstOperand = null;
+let secondOperand = null;
+let firstOperator = null;
+let secondOperator = null;
+let result = null;
+const buttons = document.querySelectorAll('button');
 
+window.addEventListener('keydown', function(e){
+    const key = document.querySelector(`button[data-key='${e.keyCode}']`);
+    key.click();
+});
 
-// Should be able to handle negative input 
-// Should be able to handle multiple digit inputs 
-// Todo: decimal input support
-// Prevent users from entering more than one operator and instead replace prev operator with recent one
+function updateDisplay() {
+    const display = document.getElementById('display');
+    display.innerText = displayValue;
+    if(displayValue.length > 9) {
+        display.innerText = displayValue.substring(0, 9);
+    }
+}
+  
+updateDisplay();
 
-
-function operandFunction(input){
-    if (display.value.length < 10) {
-        display.value += input;
-        
-        // if user did not enter anything yet
-        if (num1 === undefined || operator === '') {
-            num1 = (num1 !== undefined ? num1.toString() : '') + input;
-            num1 = parseFloat(num1);
-            // if user input is negative
-            if (operator == '-'){
-                num1 = -1 * num1;
-                signFlag = 1;
-                operator = '';
+function clickButton() {
+    for(let i = 0; i < buttons.length; i++) {
+        buttons[i].addEventListener('click', function() {
+            if(buttons[i].classList.contains('operand')) {
+                inputOperand(buttons[i].value);
+                updateDisplay();
+            } else if(buttons[i].classList.contains('operator')) {
+                inputOperator(buttons[i].value);
+            } else if(buttons[i].classList.contains('equals')) {
+                inputEquals();
+                updateDisplay();
+            } else if(buttons[i].classList.contains('decimal')) {
+                inputDecimal(buttons[i].value);
+                updateDisplay();
+            } else if(buttons[i].classList.contains('percent')) {
+                inputPercent(displayValue);
+                updateDisplay();
+            } else if(buttons[i].classList.contains('sign')) {
+                inputSign(displayValue);
+                updateDisplay();
+            } else if(buttons[i].classList.contains('del')) {
+                inputBackspace(displayValue);
+                updateDisplay();  
             }
-            num1 = num1.toString();
-            console.log(`num1 = ${num1}`);
-            return num1;
+            else if(buttons[i].classList.contains('clear'))
+                clearDisplay();
+                updateDisplay();
         }
-        // not sure if this is being used 
-        else if (parseFloat(display.value) < 0 && num1 !== undefined && signFlag == 0){
-            num1 = (num1 !== undefined ? num1.toString() : '') + input;
-            num1 = num1.toString();
-            console.log(`num1 ok= ${num1}`);
-            return num1;
-        }
-        // if user enters negative first operand and then tries to subtract
-        else if (parseFloat(display.value) < 0 && num1 !== undefined && signFlag == 1){
-            num2 = (num2 !== undefined ? num2.toString() : '') + input;
-            num2 = num2.toString();
-            console.log(`num2 ok= ${num2}`);
-            return num2;
-        }
-        // if user enters negative input
-        else if (num1 !== undefined && operator == '-' && num2 === undefined){
-            if (result === undefined || result === num1){
-                num2 = (num2 !== undefined ? num2.toString() : '') + input;
-                num2 = parseFloat(num2);
-                console.log(`num2 hello = ${num2}`);
-                return num2;                
-            }
-            // not sure if this is being used 
-            num1 = parseFloat(num1);
-            num1 = -1 * num1;
-            num1 = num1.toString();
-            console.log(`num1 hello= ${num1}`);
-            display.value = num1;
-        }
-        // if user already entered first operand
-        else if (num1 !== undefined && operator !== '' && num2 == undefined) {
-            num2 = (num2 !== undefined ? num2.toString() : '') + input;
-            num2 = parseFloat(num2);
-            console.log(`num2 = ${num2}`);
-        }
+    )}
+}
 
-        else if (num1 !== undefined && operator !== '' && num2 !== undefined){
-            num2 = (num2 !== undefined ? num2.toString() : '') + input;
-            console.log(`num2 = ${num2}`);
-            return num2;
+clickButton();
+
+function inputOperand(operand) {
+    if(firstOperator === null) {
+        if(displayValue === '0' || displayValue === 0) {
+            //1st click - handles first operand input
+            displayValue = operand;
+        } else if(displayValue === firstOperand) {
+            //starts new operation after inputEquals()
+            displayValue = operand;
+        } else {
+            displayValue += operand;
+        }
+    } else {
+        //3rd/5th click - inputs to secondOperand
+        if(displayValue === firstOperand) {
+            displayValue = operand;
+        } else {
+            displayValue += operand;
         }
     }
 }
 
-function operatorFunction(input){
-    // if first operand and operator is already input
-    if(num2 !== undefined){
-        operate();
+function inputOperator(operator) {
+    if(firstOperator != null && secondOperator === null) {
+        //4th click - handles input of second operator
+        secondOperator = operator;
+        secondOperand = displayValue;
+        result = operate(Number(firstOperand), Number(secondOperand), firstOperator);
+        displayValue = roundAccurately(result, 15).toString();
+        firstOperand = displayValue;
+        result = null;
+    } else if(firstOperator != null && secondOperator != null) {
+        //6th click - new secondOperator
+        secondOperand = displayValue;
+        result = operate(Number(firstOperand), Number(secondOperand), secondOperator);
+        secondOperator = operator;
+        displayValue = roundAccurately(result, 15).toString();
+        firstOperand = displayValue;
+        result = null;
+    } else { 
+        //2nd click - handles first operator input
+        firstOperator = operator;
+        firstOperand = displayValue;
     }
-    operator = input;
-    console.log(`operator = ${operator}`);
-    console.log(`num1 = ${num1}`);
-    console.log(`num2 = ${num2}`);
-    console.log(`result = ${result}`);
-    display.value += input;
-    num2 = undefined; // Reset num2 for the next operand
 }
 
-function clearDisplay(){
-    display.value = '';
+function inputEquals() {
+    //hitting equals doesn't display undefined before operate()
+    if(firstOperator === null) {
+        displayValue = displayValue;
+    } else if(secondOperator != null) {
+        //handles final result
+        secondOperand = displayValue;
+        result = operate(Number(firstOperand), Number(secondOperand), secondOperator);
+        if(result === 'Undefined') {
+            displayValue = 'Undefined';
+        } else {
+            displayValue = roundAccurately(result, 15).toString();
+            firstOperand = displayValue;
+            secondOperand = null;
+            firstOperator = null;
+            secondOperator = null;
+            result = null;
+        }
+    } else {
+        //handles first operation
+        secondOperand = displayValue;
+        result = operate(Number(firstOperand), Number(secondOperand), firstOperator);
+        if(result === 'Undefined') {
+            displayValue = 'Undefined';
+        } else {
+            displayValue = roundAccurately(result, 15).toString();
+            firstOperand = displayValue;
+            secondOperand = null;
+            firstOperator = null;
+            secondOperator = null;
+            result = null;
+        }
+    }
 }
 
-function allClear(){
-    display.value = '';
-    num1 = undefined;
-    num2 = undefined;
-    operator = '';
+function inputDecimal(dot) {
+    if(displayValue === firstOperand || displayValue === secondOperand) {
+        displayValue = '0';
+        displayValue += dot;
+    } else if(!displayValue.includes(dot)) {
+        displayValue += dot;
+    } 
 }
 
-function operate() {
-    num1 = parseFloat(num1); 
-    num2 = parseFloat(num2);
+function inputPercent(num) {
+    displayValue = (num/100).toString();
+}
 
-    switch (operator) {
-        case '+':
-            result = num1 + num2;
-            break;
-        case '-':
-            result = num1 - num2;
-            break;
-        case '*':
-            result = num1 * num2;
-            break;
-        case '/':
-            result = num1 / num2;
-            break;
-        default:
-            result = "Error!";
-            break;
+function inputSign(num) {
+    displayValue = (num * -1).toString();
+}
+
+function clearDisplay() {
+    displayValue = '0';
+    firstOperand = null;
+    secondOperand = null;
+    firstOperator = null;
+    secondOperator = null;
+    result = null;
+}
+
+function inputBackspace() {
+    if(firstOperand != null) {
+        firstOperand = null;
+        displayValue = '0';
     }
-    result = result.toString();
-    if (result.length > 10) {
-        result = result.substring(0, 10);
+    else{
+        secondOperand = null;
+        displayValue = '0';
     }
-    console.log(`num1 = ${num1}`);
-    console.log(`operator = ${operator}`);
-    console.log(`num2 = ${num2}`);
-    console.log(`result = ${result}`);
-    display.value = result;
-    num1 = result; // Storing the result for further operations
-    num2 = undefined;
+}
+
+function operate(x, y, op) {
+    if(op === '+') {
+        return x + y;
+    } else if(op === '-') {
+        return x - y;
+    } else if(op === '*') {
+        return x * y;
+    } else if(op === '/') {
+        if(y === 0) {
+            return 'Undefined';
+        } else {
+        return x / y;
+        }
+    }
+}
+
+function roundAccurately(num, places) {
+    return parseFloat(Math.round(num + 'e' + places) + 'e-' + places);
 }

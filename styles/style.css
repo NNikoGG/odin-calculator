@@ -1,47 +1,78 @@
+html{
+    text-align: center;
+}
+
+
 body{
     margin: 0;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     height: 100vh;
+    background: linear-gradient(#383838, #b2b9b7);
 }
 
 
-.container{
+#calc {
+    display: flex;
+    flex-direction: column;
+    min-height: 95vh;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+    background: linear-gradient(#383838, #b2b9b7);
+}
+
+.title{
+    margin-bottom: 20px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 3rem;
+    font-weight: bold;
+    -webkit-text-stroke-width: 0.5px;
+    -webkit-text-stroke-color: hsl(0, 0%, 100%);
+    color: hsl(0, 0%, 0%); 
+
+}
+
+#container{
     font-family: Arial, Helvetica, sans-serif;
     background-color: hsl(0, 0%, 10%);
+    border: 10px solid black;
     border-radius: 15px;
     max-width: 500px;
     overflow: hidden;
-}
-
-.display{
-    width: 100%;
-    padding: 20px;
-    font-size: 5rem;
-    text-align: left;
-    border: none;
-    background-color: hsl(0, 0%, 20%);
-    color: white;
-}
-
-
-.buttons{
     display: grid;
-    grid-template-columns: repeat(4,1fr);
-    gap: 6px;
-    padding: 25px;
+    grid-template-columns: repeat(4, 100px);
+    grid-template-rows: minmax(100px, auto) repeat(5, 80px);
+    gap: 4px;
 }
 
+
+#display{
+    grid-column: 1 / -1;
+    background-color: hsl(0, 0%, 75%);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: flex-end;
+    padding: 5px;
+    font-size: 5.5em;
+    font-weight: initial;
+    text-shadow: 1.3px 1.3px #383838;
+    margin: 5px;
+    color: hsl(0, 0%, 0%);
+}
 
 button{
-    width: 100px;
-    height: 100px;
     border-radius: 4px;
     border: none;
+    margin: 2px;
     background-color: hsl(0, 0%, 15%);
     color: white;
-    font-size: 3rem;
+    font-size: 2rem;
     font-weight: bold;
     cursor: pointer;
 }
@@ -52,5 +83,33 @@ button:hover{
 
 button:active{
     background-color: hsl(0, 0%, 50%);
+}
+
+#zero{
+    grid-column: span 2;
+}
+
+#all-clear{
+    grid-column: span 2;
+}
+
+.operator {
+    background-color: hsl(30, 100%, 50%);    
+}
+
+.operator:hover {
+    background-color: hsl(30, 100%, 70%);
+}
+
+.operator:focus {
+    background-color: hsl(30, 100%, 70%);
+}
+
+.equals {
+    background-color: hsl(30, 100%, 50%);
+}
+
+.equals:active {
+    background-color: hsl(30, 100%, 50%);
 }
 
